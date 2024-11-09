@@ -2,3 +2,5 @@ rebrowser-playwright
 numpy
 pillow
 matplotlib
+fastapi[standard]
+tqdm

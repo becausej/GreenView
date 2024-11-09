@@ -17,5 +17,5 @@ ENTRYPOINT ["/bin/bash", "xvfb-startup.sh"]
 WORKDIR /app
 ADD requirements.txt /app/
 RUN pip install -r requirements.txt
-ADD main.py /app
+ADD *.py /app
 CMD ["python", "main.py"]

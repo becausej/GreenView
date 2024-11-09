@@ -1,7 +1,12 @@
+from re import sub
 from rebrowser_playwright.sync_api import sync_playwright, Browser, BrowserContext
-import random
 import numpy as np
 import json
+from detection import one_img
+import os
+from tqdm import tqdm
+
+testing_mode = False
 
 class USGSMapScraper:
     URL = "https://earthexplorer.usgs.gov/"
@@ -64,13 +69,17 @@ class AreaScraper(USGSMapScraper):
         lats = np.arange(self.min_lat, self.max_lat, lat_step_size)
         longs = np.arange(self.min_long, self.max_long, long_step_size)
 
+        progress = tqdm(total=len(lats) * len(longs))
+
         for lat_index in range(len(lats)):
             for long_index in range(len(longs)):
                 lat = str(lats[lat_index])
                 long = str(longs[long_index])
                 path = f"output/screenshot_{lat_index}_{long_index}.png"
-                self.capture(lat, long, path)
+                if not os.path.exists(path):
+                    self.capture(lat, long, path)
                 callback(lat, long, path)
+                progress.update(1)
 
 def main():
     # with USGSMapScraper() as scraper:
@@ -84,23 +93,83 @@ def main():
     #         print(f"Capturing screenshot {i}")
     #         scraper.capture(lat, long, f"output/screenshot_{i}.png")
 
+    lat_step_size = 0.0025
+    long_step_size = 0.004
+
+    if testing_mode:
+        lat_step_size *= 5
+        long_step_size *= 5
+
     features = []
 
     def callback(lat, long, path):
-        feature = {
-            "type": "Feature",
-            "properties": {
-                "green": 1
-            },
-            "geometry": {
-                "type": "Point",
-                "coordinates": [float(long), float(lat)]
-            }
-        }
-        features.append(feature)
+        num_row = 7
+        num_col = 7
 
-    with AreaScraper(42.3491, -71.0725, 42.3678, -71.0486) as scraper:
-        scraper.scrape_steps(0.0025, 0.004, callback)
+        green = one_img(path, num_row=num_row, num_col=num_col) ** 0.8
+        lat_float = float(lat)
+        long_float = float(long)
+
+        left = long_float - long_step_size / 2
+        bottom = lat_float - lat_step_size / 2
+
+        for row in range(num_row):
+            for col in range(num_col):
+                g = green[row, col]
+                r_amount = 1 * g
+                g_amount = 2 * g
+                b_amount = 1 * g
+                def num_to_hex_digits(num):
+                    if num > 1:
+                        num = 1
+                    hex_str = hex(int(num * 255))[2:]
+                    if len(hex_str) == 1:
+                        hex_str = "0" + hex_str
+                    return hex_str
+
+                color = f"#{num_to_hex_digits(r_amount)}{num_to_hex_digits(g_amount)}{num_to_hex_digits(b_amount)}"
+
+                sub_bottom = bottom + row / num_row * lat_step_size
+                sub_top = bottom + (row + 1) / num_row * lat_step_size
+                sub_left = left + col / num_col * long_step_size
+                sub_right = left + (col + 1) / num_col * long_step_size
+
+                feature = {
+                    "type": "Feature",
+                    "properties": {
+                        "green": float(g),
+                        "fill": color,
+                        "fill-opacity": 0.55,
+                        "stroke": "#000000",
+                        "stroke-width": 1,
+                        "stroke-opacity": 1,
+                    },
+                    "geometry": {
+                        "type": "Polygon",
+                        "coordinates": [[
+                            [
+                                sub_left, sub_top,
+                            ],
+                            [
+                                sub_right, sub_top,
+                            ],
+                            [
+                                sub_right, sub_bottom,
+                            ],
+                            [
+                                sub_left, sub_bottom,
+                            ],
+                            [
+                                sub_left, sub_top,
+                            ],
+                        ]],
+                    },
+                }
+
+                features.append(feature)
+
+    with AreaScraper(42.3241, -71.1025, 42.3928, -71.0186) as scraper:
+        scraper.scrape_steps(lat_step_size, long_step_size, callback)
 
     geojson = {
         "type": "FeatureCollection",
