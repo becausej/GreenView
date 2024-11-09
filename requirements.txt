@@ -1,1 +1,4 @@
 rebrowser-playwright
+numpy
+pillow
+matplotlib

@@ -3,7 +3,6 @@ WORKDIR /app
 RUN pip install rebrowser-playwright
 RUN rebrowser_playwright install chromium
 RUN rebrowser_playwright install-deps
-ADD requirements.txt /app/
 WORKDIR /usr/bin
 RUN apt-get update -y \
   && apt-get install --no-install-recommends -y xvfb libgl1-mesa-dri xauth \
@@ -16,5 +15,7 @@ ARG XARGS=""
 ENV XVFB_ARGS="${XARGS}"
 ENTRYPOINT ["/bin/bash", "xvfb-startup.sh"]
 WORKDIR /app
+ADD requirements.txt /app/
+RUN pip install -r requirements.txt
 ADD main.py /app
 CMD ["python", "main.py"]
