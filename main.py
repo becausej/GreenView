@@ -82,17 +82,6 @@ class AreaScraper(USGSMapScraper):
                 progress.update(1)
 
 def main():
-    # with USGSMapScraper() as scraper:
-    #     for i, (lat, long) in enumerate([
-    #         ('42.3498476225924', '-71.06367409229279'),
-    #         ('42.355367352364375', '-71.0640549659729'),
-    #         ('42.35453486490882', '-71.0676920413971'),
-    #         ('42.3617203219366', '-71.06894731521606'),
-    #         ('42.364225392938955', '-71.06598615646362'),
-    #     ]):
-    #         print(f"Capturing screenshot {i}")
-    #         scraper.capture(lat, long, f"output/screenshot_{i}.png")
-
     lat_step_size = 0.0025
     long_step_size = 0.004
 
@@ -103,10 +92,10 @@ def main():
     features = []
 
     def callback(lat, long, path):
-        num_row = 7
-        num_col = 7
+        num_row = 3
+        num_col = 3
 
-        green = one_img(path, num_row=num_row, num_col=num_col) ** 0.8
+        green = one_img(path, num_row=num_row, num_col=num_col) ** 1
         lat_float = float(lat)
         long_float = float(long)
 
@@ -115,7 +104,8 @@ def main():
 
         for row in range(num_row):
             for col in range(num_col):
-                g = green[row, col]
+                g = green[-1-row, col]
+
                 r_amount = 1 * g
                 g_amount = 2 * g
                 b_amount = 1 * g
@@ -139,7 +129,7 @@ def main():
                     "properties": {
                         "green": float(g),
                         "fill": color,
-                        "fill-opacity": 0.55,
+                        "fill-opacity": 0.6,
                         "stroke": "#000000",
                         "stroke-width": 1,
                         "stroke-opacity": 1,

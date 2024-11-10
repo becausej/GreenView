@@ -1,12 +1,15 @@
 from PIL import Image
 import numpy as np
 
-crop_amount = 55
+left_crop_amount = 43
+right_crop_amount = 28
+top_crop_amount = 47
+bottom_crop_amount = 50
 
 def crop_img(filename):
     im = Image.open(filename)
     width, height = im.size
-    im1 = im.crop((crop_amount, crop_amount, width-crop_amount, height-crop_amount))
+    im1 = im.crop((left_crop_amount, top_crop_amount, width-right_crop_amount, height-bottom_crop_amount))
     return im1
 
 def green(mask, num_row, num_col):
@@ -17,7 +20,7 @@ def green(mask, num_row, num_col):
     return np.mean(mask, axis=(2, 3))
 
 # Load image and convert to HSV
-def one_img(filename, min_hue = 40, max_hue = 70, sat_min = 0.2, min_val = 20, num_row = 3, num_col = 3):
+def one_img(filename, min_hue = 40, max_hue = 70, sat_min = 0.25, min_val = 20, num_row = 3, num_col = 3):
     im = crop_img(filename).convert('HSV')
     # Extract Hue channel and make Numpy array for fast processing
     Hue = np.array(im.getchannel('H'))
