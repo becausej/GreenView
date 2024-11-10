@@ -95,7 +95,7 @@ def main():
         num_row = 3
         num_col = 3
 
-        green = one_img(path, num_row=num_row, num_col=num_col) ** 0.8
+        green = one_img(path, num_row=num_row, num_col=num_col) ** 1
         lat_float = float(lat)
         long_float = float(long)
 
