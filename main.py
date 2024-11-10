@@ -166,7 +166,7 @@ def main():
         "features": features
     }
 
-    with open("output/geojson.json", "w") as f:
+    with open("visualizer/geojson.json", "w") as f:
         json.dump(geojson, f)
 
 if __name__ == "__main__":
